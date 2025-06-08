@@ -6,10 +6,10 @@ interface FetchNotesRes {
   totalPages: number;
 }
 
-interface CreateNote {
-  titleNote: string;
-  contentNote: string;
-  tagNote: string;
+interface NewNote {
+  title: string;
+  content?: string;
+  tag: string;
 }
 
 interface SearchParams {
@@ -17,43 +17,36 @@ interface SearchParams {
 }
 
 const myTocen = import.meta.env.VITE_NOTEHUB_TOKEN;
-axios.defaults.baseURL = "https://notehub-public.goit.study/api/notes";
+axios.defaults.baseURL = "https://notehub-public.goit.study/api";
 axios.defaults.headers.common["Authorization"] = `Bearer ${myTocen}`;
 
 export async function fetchNotes(
-  currentPage: number,
-  searchQuery: string
+  searchText: string,
+  page: number
 ): Promise<FetchNotesRes> {
   const searchParams: SearchParams = {};
 
-  if (searchQuery) {
-    searchParams.search = searchQuery;
+  if (searchText) {
+    searchParams.search = searchText;
   }
 
-  const res = await axios.get<FetchNotesRes>("", {
+  const res = await axios.get<FetchNotesRes>("/notes", {
     params: {
-      page: currentPage,
-      perPage: 12,
       ...searchParams,
+      page,
+      perPage: 12,
     },
   });
+
   return res.data;
 }
 
-export async function createNote({
-  titleNote,
-  contentNote,
-  tagNote,
-}: CreateNote): Promise<Note> {
-  const res = await axios.post<Note>("", {
-    title: titleNote,
-    content: contentNote,
-    tag: tagNote,
-  });
+export async function createNote(newNote: NewNote): Promise<Note> {
+  const res = await axios.post<Note>("/notes", newNote);
   return res.data;
 }
 
 export async function deleteNote(noteId: number): Promise<Note> {
-  const res = await axios.delete<Note>(`/${noteId}`);
+  const res = await axios.delete<Note>(`/notes/${noteId}`);
   return res.data;
 }
